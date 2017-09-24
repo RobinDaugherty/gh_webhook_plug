@@ -1,4 +1,4 @@
-defmodule GhWebhookPlugTest do
+defmodule GithubWebhookAuthenticationPlugTest do
   use ExUnit.Case, async: true
   use Plug.Test
 
@@ -6,7 +6,7 @@ defmodule GhWebhookPlugTest do
   defmodule DemoPlug do
     use Plug.Builder
 
-    plug GhWebhookPlug, secret: "secret", path: "/gh-webhook", action: {__MODULE__, :'gh_webhook'}
+    plug GithubWebhookAuthenticationPlug, secret: "secret", path: "/gh-webhook", action: {__MODULE__, :'gh_webhook'}
     plug :next_in_chain
 
     def gh_webhook(payload) do
@@ -53,7 +53,7 @@ defmodule GhWebhookPlugTest do
     defmodule DemoPlugEnv do
       use Plug.Builder
 
-      plug GhWebhookPlug, path: "/gh-webhook", action: {__MODULE__, :'gh_webhook'}
+      plug GithubWebhookAuthenticationPlug, path: "/gh-webhook", action: {__MODULE__, :'gh_webhook'}
 
       def gh_webhook(payload) do
         Process.put(:payload, payload)
@@ -74,7 +74,7 @@ defmodule GhWebhookPlugTest do
     defmodule DemoPlugParamPresendence do
       use Plug.Builder
 
-      plug GhWebhookPlug, secret: "secret",path: "/gh-webhook", action: {__MODULE__, :'gh_webhook'}
+      plug GithubWebhookAuthenticationPlug, secret: "secret",path: "/gh-webhook", action: {__MODULE__, :'gh_webhook'}
 
       def gh_webhook(payload) do
         Process.put(:payload, payload)
@@ -94,7 +94,7 @@ defmodule GhWebhookPlugTest do
     defmodule DemoPlugApplicationSecret do
       use Plug.Builder
 
-      plug GhWebhookPlug, path: "/gh-webhook", action: {__MODULE__, :'gh_webhook'}
+      plug GithubWebhookAuthenticationPlug, path: "/gh-webhook", action: {__MODULE__, :'gh_webhook'}
 
       def gh_webhook(payload) do
         Process.put(:payload, payload)
@@ -102,7 +102,7 @@ defmodule GhWebhookPlugTest do
     end
 
     System.delete_env("GH_WEBHOOK_SECRET")
-    Application.put_env(:gh_webhook_plug, :secret, "1234")
+    Application.put_env(:github_webhook_authentication_plug, :secret, "1234")
     hexdigest = "sha1=" <> (:crypto.hmac(:sha, "1234", "hello world") |> Base.encode16(case: :lower))
     conn = conn(:get, "/gh-webhook", "hello world") |> put_req_header("x-hub-signature", hexdigest)
     |> DemoPlugApplicationSecret.call([])
@@ -116,7 +116,7 @@ defmodule GhWebhookPlugTest do
     defmodule DemoPlugNoSecret do
       use Plug.Builder
 
-      plug GhWebhookPlug, path: "/gh-webhook", action: {__MODULE__, :'gh_webhook'}
+      plug GithubWebhookAuthenticationPlug, path: "/gh-webhook", action: {__MODULE__, :'gh_webhook'}
 
       def gh_webhook(payload) do
         Process.put(:payload, payload)
@@ -124,7 +124,7 @@ defmodule GhWebhookPlugTest do
     end
 
     System.delete_env("GH_WEBHOOK_SECRET")
-    Application.delete_env(:gh_webhook_plug, :secret)
+    Application.delete_env(:github_webhook_authentication_plug, :secret)
     hexdigest = "sha1=" <> (:crypto.hmac(:sha, "", "hello world") |> Base.encode16(case: :lower))
       conn = conn(:get, "/gh-webhook", "hello world") |> put_req_header("x-hub-signature", hexdigest)
       |> DemoPlugNoSecret.call([])

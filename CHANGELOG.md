@@ -1,9 +1,4 @@
-v0.0.1
+v1.0.0
 ======
 
-* Initial release
-
-v0.0.2
-======
-
-* Add support for run time evaluated configuration from ENV variable GH_WEBHOOK_SECRET
+Initial release as an authenticator plug.
